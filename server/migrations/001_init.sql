@@ -1,0 +1,46 @@
+CREATE TABLE IF NOT EXISTS users (
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS habit_templates (
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT NULL,
+  cadence ENUM('daily','weekly','monthly') NOT NULL,
+  target_count INT NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS habits (
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  user_id CHAR(36) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description TEXT NULL,
+  cadence ENUM('daily','weekly','monthly') NOT NULL,
+  target_count INT NOT NULL DEFAULT 1,
+  archived TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_habits_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_habits_user (user_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS habit_logs (
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  habit_id CHAR(36) NOT NULL,
+  occurs_on DATE NOT NULL,
+  count INT NOT NULL DEFAULT 1,
+  note TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_logs_habit FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE,
+  INDEX idx_logs_habit (habit_id),
+  INDEX idx_logs_occurs (occurs_on)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  filename VARCHAR(255) NOT NULL UNIQUE,
+  applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
